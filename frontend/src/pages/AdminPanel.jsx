@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import DataImportSection from '../components/DataImportSection';
 import { 
   Settings, 
   Megaphone, 
@@ -14,7 +15,8 @@ import {
   UserCheck,
   Search,
   CheckCircle,
-  XCircle
+  XCircle,
+  Database
 } from 'lucide-react';
 
 const AdminPanel = () => {
@@ -216,6 +218,16 @@ const AdminPanel = () => {
           >
             <History size={14} /> Audit Trail ({auditLogs.length})
           </button>
+          <button 
+            onClick={() => { setActiveTab('data'); setSearchQuery(''); }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'data' 
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30' 
+                : 'text-gray-400 hover:text-white hover:bg-white/[0.04]'
+            }`}
+          >
+            <Database size={14} /> Data Management
+          </button>
         </div>
         
         {/* Search Input */}
@@ -254,6 +266,10 @@ const AdminPanel = () => {
           {[1, 2, 3, 4, 5].map((n) => (
             <div key={n} className="h-12 bg-white/5 rounded-xl border border-white/[0.02]"></div>
           ))}
+        </div>
+      ) : activeTab === 'data' ? (
+        <div className="glass-panel p-6 rounded-2xl border border-white/[0.04]">
+          <DataImportSection onSuccess={loadData} />
         </div>
       ) : (
         <div className="glass-panel rounded-2xl overflow-hidden border border-white/[0.04]">

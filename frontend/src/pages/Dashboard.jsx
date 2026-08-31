@@ -3,6 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 import InsightCard from '../components/InsightCard';
+import DataImportSection from '../components/DataImportSection';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Sparkles, DollarSign, ShoppingBag, TrendingUp, RefreshCw, Layers, Calendar, BarChart3, AlertCircle, Megaphone, CheckCircle, IndianRupee } from 'lucide-react';
 
@@ -202,24 +203,19 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Designed Empty State */}
-        <div className="flex flex-col items-center justify-center border border-white/[0.04] bg-[#0d0c15]/60 rounded-2xl p-12 text-center min-h-[450px] space-y-5">
-          <div className="w-16 h-16 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
-            <Sparkles size={30} className="animate-pulse" />
-          </div>
-          <div className="space-y-2">
+        {/* Designed Empty State with Dual Data Input System */}
+        <div className="border border-white/[0.04] bg-[#0d0c15]/60 rounded-2xl p-8 space-y-6">
+          <div className="text-center space-y-2 max-w-lg mx-auto">
+            <div className="w-14 h-14 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mx-auto">
+              <Sparkles size={26} className="animate-pulse" />
+            </div>
             <h2 className="text-xl font-bold text-white">No campaigns yet!</h2>
-            <p className="text-gray-400 text-sm max-w-md leading-relaxed">
-              Your growth campaign dashboard is currently empty. To see how MerchantAI automatically scans sales telemetry, validates promotional safety, and launches campaign checkouts, load the onboarding dataset.
+            <p className="text-gray-400 text-xs leading-relaxed">
+              Your growth campaign dashboard is currently empty. To see how MerchantAI automatically scans sales telemetry, validates promotional safety, and launches campaign checkouts, seed demo data or import your real merchant sales CSV.
             </p>
           </div>
-          <button
-            onClick={handleSeedDemo}
-            disabled={loadingSeed}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold rounded-xl transition-all cursor-pointer shadow-lg shadow-purple-600/30 active:scale-[0.98]"
-          >
-            {loadingSeed ? 'Seeding sandbox...' : 'Load Onboarding Demo Data'}
-          </button>
+
+          <DataImportSection onSuccess={fetchData} />
         </div>
       </div>
     );
@@ -587,6 +583,11 @@ const Dashboard = () => {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Data Management System */}
+      <div className="pt-4 border-t border-white/[0.04]">
+        <DataImportSection onSuccess={fetchData} />
       </div>
     </div>
   );

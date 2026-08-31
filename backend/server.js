@@ -46,7 +46,8 @@ import {
   aiRoutes, 
   analyticsRoutes,
   notificationRoutes,
-  dashboardRoutes
+  dashboardRoutes,
+  dataRoutes
 } from './routes/apiRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js';
@@ -60,6 +61,7 @@ app.use('/api/analytics', generalLimiter, analyticsRoutes);
 app.use('/api/webhook', generalLimiter, webhookRoutes);
 app.use('/api/notifications', generalLimiter, notificationRoutes);
 app.use('/api/dashboard', generalLimiter, dashboardRoutes);
+app.use('/api/data', generalLimiter, dataRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');

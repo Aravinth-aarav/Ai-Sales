@@ -1,4 +1,5 @@
 import express from 'express';
+import multer from 'multer';
 import { body, validationResult } from 'express-validator';
 import { getProducts, createProduct } from '../controllers/productController.js';
 import { getSales, createSale } from '../controllers/saleController.js';
@@ -14,6 +15,7 @@ import {
 import { getDashboardMetrics, loadDemoData, resetDemoData } from '../controllers/analyticsController.js';
 import { getNotifications, markAsRead, markAllAsRead } from '../controllers/notificationController.js';
 import { getDashboardSummary } from '../controllers/dashboardController.js';
+import { importCSVData, downloadSampleCSV } from '../controllers/dataController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const validateRequest = (req, res, next) => {
@@ -75,6 +77,24 @@ notificationRoutes.route('/:id/read').patch(protect, markAsRead);
 const dashboardRoutes = express.Router();
 dashboardRoutes.route('/summary').get(protect, getDashboardSummary);
 
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
+
+const uploadSingleFile = (req, res, next) => {
+  upload.single('file')(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ success: false, message: err.message || 'File upload error' });
+    }
+    next();
+  });
+};
+
+const dataRoutes = express.Router();
+dataRoutes.route('/import').post(protect, uploadSingleFile, importCSVData);
+dataRoutes.route('/sample-csv').get(downloadSampleCSV);
+
 export { 
   productRoutes, 
   saleRoutes, 
@@ -82,5 +102,6 @@ export {
   aiRoutes, 
   analyticsRoutes, 
   notificationRoutes, 
-  dashboardRoutes 
+  dashboardRoutes,
+  dataRoutes
 };
