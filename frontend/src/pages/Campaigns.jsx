@@ -97,14 +97,20 @@ const Campaigns = () => {
           ))}
         </div>
       ) : campaigns.length === 0 ? (
-        <div className="glass-panel p-10 rounded-2xl text-center space-y-4 max-w-lg mx-auto">
-          <div className="w-12 h-12 rounded-full bg-white/[0.02] border border-white/[0.06] flex items-center justify-center text-gray-500 mx-auto">
-            <Megaphone size={20} />
+        <div className="flex flex-col items-center justify-center border border-white/[0.04] bg-[#0d0c15]/60 rounded-2xl p-12 text-center min-h-[400px] space-y-4 max-w-2xl mx-auto">
+          <div className="w-16 h-16 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+            <Megaphone size={28} />
           </div>
-          <h3 className="text-md font-semibold text-white">No active campaigns yet</h3>
-          <p className="text-xs text-gray-500 leading-relaxed">
-            Your store campaign dashboard is currently empty. Go back to the Dashboard and click <strong className="text-purple-400">Detect Opportunities</strong> to analyze store performance data and launch a targeted campaign.
+          <h2 className="text-xl font-bold text-white">Create your first campaign</h2>
+          <p className="text-gray-400 text-sm leading-relaxed max-w-md">
+            Campaigns let you target customers with specific promotions based on sales trends, slow-moving items, or product bundles. Launch your first one today!
           </p>
+          <Link
+            to="/dashboard"
+            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all cursor-pointer shadow-lg shadow-purple-600/30 active:scale-[0.98] inline-block"
+          >
+            Go to Dashboard & Detect Campaigns
+          </Link>
         </div>
       ) : (
         <>

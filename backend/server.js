@@ -39,7 +39,15 @@ const aiLimiter = rateLimit({
   message: { success: false, message: 'AI limit reached. Please try again in 15 minutes.' }
 });
 
-import { productRoutes, saleRoutes, campaignRoutes, aiRoutes, analyticsRoutes } from './routes/apiRoutes.js';
+import { 
+  productRoutes, 
+  saleRoutes, 
+  campaignRoutes, 
+  aiRoutes, 
+  analyticsRoutes,
+  notificationRoutes,
+  dashboardRoutes
+} from './routes/apiRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js';
 
@@ -50,6 +58,8 @@ app.use('/api/campaigns', generalLimiter, campaignRoutes);
 app.use('/api/ai', aiLimiter, aiRoutes);
 app.use('/api/analytics', generalLimiter, analyticsRoutes);
 app.use('/api/webhook', generalLimiter, webhookRoutes);
+app.use('/api/notifications', generalLimiter, notificationRoutes);
+app.use('/api/dashboard', generalLimiter, dashboardRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');

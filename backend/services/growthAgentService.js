@@ -2,6 +2,7 @@ import Sale from '../models/Sale.js';
 import Product from '../models/Product.js';
 import AIInsight from '../models/AIInsight.js';
 import AIAction from '../models/AIAction.js';
+import Notification from '../models/Notification.js';
 import { executeGeminiPrompt } from './geminiService.js';
 import { validateCampaignGuardrails } from './guardrailService.js';
 
@@ -125,6 +126,13 @@ You MUST respond ONLY with a raw JSON object matching this schema (do not includ
   });
 
   const savedInsight = await newInsight.save();
+
+  // Trigger in-app notification
+  await Notification.create({
+    userId: merchantId,
+    message: 'New AI insight available for review',
+    type: 'ai_insight'
+  });
 
   // Create initial proposed AIAction in audit log
   const newAction = new AIAction({

@@ -20,6 +20,52 @@ import {
 const AdminPanel = () => {
   const { user } = useContext(AuthContext);
 
+  const [activeTab, setActiveTab] = useState('campaigns');
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState(false);
+  
+  // Data States
+  const [campaigns, setCampaigns] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [message, setMessage] = useState(null);
+
+  const showNotification = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage(null), 4000);
+  };
+
+  // Load Admin Data
+  const loadData = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const headers = { Authorization: `Bearer ${user.token}` };
+      
+      const [campaignsRes, usersRes, auditRes] = await Promise.all([
+        axios.get('http://localhost:5000/api/campaigns', { headers }),
+        axios.get('http://localhost:5000/api/auth/users', { headers }),
+        axios.get('http://localhost:5000/api/ai/actions', { headers })
+      ]);
+
+      setCampaigns(campaignsRes.data);
+      setUsers(usersRes.data);
+      setAuditLogs(auditRes.data);
+    } catch (err) {
+      console.error('Failed to retrieve administrative data:', err);
+      setError(true);
+      showNotification('error', 'Error loading administrative records.');
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (user) {
+      loadData();
+    }
+  }, [user]);
+
   if (user?.role !== 'Admin') {
     return (
       <div className="glass-panel p-8 rounded-2xl border border-red-500/20 text-center space-y-4 max-w-md mx-auto mt-20">
@@ -39,49 +85,6 @@ const AdminPanel = () => {
       </div>
     );
   }
-
-  const [activeTab, setActiveTab] = useState('campaigns');
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  // Data States
-  const [campaigns, setCampaigns] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [auditLogs, setAuditLogs] = useState([]);
-  const [message, setMessage] = useState(null);
-
-  // Load Admin Data
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const headers = { Authorization: `Bearer ${user.token}` };
-      
-      const [campaignsRes, usersRes, auditRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/campaigns', { headers }),
-        axios.get('http://localhost:5000/api/auth/users', { headers }),
-        axios.get('http://localhost:5000/api/ai/actions', { headers })
-      ]);
-
-      setCampaigns(campaignsRes.data);
-      setUsers(usersRes.data);
-      setAuditLogs(auditRes.data);
-    } catch (error) {
-      console.error('Failed to retrieve administrative data:', error);
-      showNotification('error', 'Error loading administrative records.');
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    if (user) {
-      loadData();
-    }
-  }, [user]);
-
-  const showNotification = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 4000);
-  };
 
   // Safe Deletion Handlers
   const handleDeleteCampaign = async (id, title) => {
@@ -228,10 +231,29 @@ const AdminPanel = () => {
         </div>
       </div>
 
-      {/* Loading State */}
-      {loading ? (
-        <div className="flex justify-center items-center py-20">
-          <span className="animate-spin border-2 border-white/20 border-t-white rounded-full w-8 h-8"></span>
+      {/* Loading State / Error State / Data Table */}
+      {error ? (
+        <div className="flex flex-col items-center justify-center border border-white/[0.04] bg-[#0d0c15]/60 rounded-2xl p-12 text-center min-h-[300px] space-y-4">
+          <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400">
+            <ShieldAlert size={22} />
+          </div>
+          <h3 className="text-md font-bold text-white">Failed to load administrative records</h3>
+          <p className="text-gray-400 text-xs max-w-xs leading-relaxed">
+            There was an error communicating with the server. Please verify your administrative rights.
+          </p>
+          <button 
+            onClick={loadData}
+            className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold cursor-pointer transition-all active:scale-[0.98]"
+          >
+            Retry Connection
+          </button>
+        </div>
+      ) : loading ? (
+        <div className="space-y-4 animate-pulse">
+          <div className="h-10 bg-white/5 rounded-xl border border-white/[0.02]"></div>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <div key={n} className="h-12 bg-white/5 rounded-xl border border-white/[0.02]"></div>
+          ))}
         </div>
       ) : (
         <div className="glass-panel rounded-2xl overflow-hidden border border-white/[0.04]">

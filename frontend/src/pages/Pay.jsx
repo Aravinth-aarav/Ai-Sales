@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import { toast } from 'react-hot-toast';
 import { 
   CreditCard, 
   Smartphone, 
@@ -51,13 +52,77 @@ const Pay = () => {
     }
   }, [user, id]);
 
-  const handleSimulatePayment = () => {
+  const handleSimulatePayment = async () => {
+    let upiIdToUse = 'success@razorpay';
+    
+    if (selectedMethod === 'upi') {
+      if (selectedUpiApp === 'custom') {
+        if (!customUpiId) {
+          toast.error('Please enter a UPI ID');
+          return;
+        }
+        const upiRegex = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
+        if (!upiRegex.test(customUpiId)) {
+          toast.error('Invalid UPI ID format (e.g. name@upi)');
+          return;
+        }
+        upiIdToUse = customUpiId;
+      }
+    }
+
     setIsPaying(true);
-    setTimeout(() => {
-      setTxnId(`TXN_${Math.random().toString(36).substring(2, 11).toUpperCase()}`);
-      setPaymentSuccess(true);
+    try {
+      const mockTxn = `TXN_${Math.random().toString(36).substring(2, 11).toUpperCase()}`;
+      
+      if (upiIdToUse === 'success@razorpay') {
+        // Trigger payment.captured webhook
+        await axios.post('http://localhost:5000/api/webhooks/razorpay', {
+          event: 'payment.captured',
+          payload: {
+            payment: {
+              entity: {
+                id: mockTxn,
+                amount: 1000,
+                notes: {
+                  campaign_id: campaign._id
+                }
+              }
+            }
+          }
+        }, {
+          headers: { 'x-simulation': 'true' }
+        });
+        
+        setTxnId(mockTxn);
+        setPaymentSuccess(true);
+        toast.success('Simulated payment processed successfully!');
+      } else {
+        // Trigger payment.failed webhook
+        await axios.post('http://localhost:5000/api/webhooks/razorpay', {
+          event: 'payment.failed',
+          payload: {
+            payment: {
+              entity: {
+                id: mockTxn,
+                amount: 1000,
+                notes: {
+                  campaign_id: campaign._id
+                }
+              }
+            }
+          }
+        }, {
+          headers: { 'x-simulation': 'true' }
+        });
+        
+        toast.error('Simulated payment failed (non-success UPI ID).');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to communicate with payment webhook simulator.');
+    } finally {
       setIsPaying(false);
-    }, 1500);
+    }
   };
 
   const getUpiPayload = () => {
@@ -287,11 +352,14 @@ const Pay = () => {
                       <div className="space-y-2">
                         <input
                           type="text"
-                          placeholder="entername@upi"
+                          placeholder="success@razorpay"
                           value={customUpiId}
                           onChange={(e) => setCustomUpiId(e.target.value)}
-                          className="w-full bg-white/[0.01] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white placeholder-gray-600 outline-none focus:border-purple-500 transition-all"
+                          className="w-full bg-white/[0.01] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white placeholder-gray-600 outline-none focus:border-purple-500 transition-all font-mono"
                         />
+                        <div className="text-[10px] text-gray-500 bg-white/[0.01] border border-white/[0.04] p-2.5 rounded-xl leading-relaxed text-left">
+                          💡 <strong>Test UPI ID:</strong> Enter <code className="text-purple-400 font-bold bg-white/[0.04] px-1 py-0.5 rounded font-mono">success@razorpay</code> to process a successful payment. Any other valid format will simulate a payment failure event.
+                        </div>
                       </div>
                     )}
 

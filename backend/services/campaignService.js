@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Campaign from '../models/Campaign.js';
 import AIAction from '../models/AIAction.js';
 import AIInsight from '../models/AIInsight.js';
+import Notification from '../models/Notification.js';
 import { validateCampaignGuardrails } from './guardrailService.js';
 
 /**
@@ -134,6 +135,13 @@ export const executeCampaignLaunch = async (merchantId, payload) => {
   });
 
   const savedCampaign = await campaign.save();
+
+  // Create in-app notification
+  await Notification.create({
+    userId: merchantId,
+    message: `Campaign '${title}' is now live`,
+    type: 'campaign_live'
+  });
 
   // 5. Update AIInsight status if triggered by an opportunity
   if (insightId) {

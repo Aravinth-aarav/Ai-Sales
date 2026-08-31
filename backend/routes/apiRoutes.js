@@ -12,6 +12,8 @@ import {
   deleteAuditAction
 } from '../controllers/aiController.js';
 import { getDashboardMetrics, loadDemoData, resetDemoData } from '../controllers/analyticsController.js';
+import { getNotifications, markAsRead, markAllAsRead } from '../controllers/notificationController.js';
+import { getDashboardSummary } from '../controllers/dashboardController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const validateRequest = (req, res, next) => {
@@ -65,4 +67,20 @@ aiRoutes.route('/actions').get(protect, getAuditActions);
 aiRoutes.route('/actions/modify').post(protect, modifyAndApproveAction);
 aiRoutes.route('/actions/:id').delete(protect, deleteAuditAction);
 
-export { productRoutes, saleRoutes, campaignRoutes, aiRoutes, analyticsRoutes };
+const notificationRoutes = express.Router();
+notificationRoutes.route('/').get(protect, getNotifications);
+notificationRoutes.route('/read-all').patch(protect, markAllAsRead);
+notificationRoutes.route('/:id/read').patch(protect, markAsRead);
+
+const dashboardRoutes = express.Router();
+dashboardRoutes.route('/summary').get(protect, getDashboardSummary);
+
+export { 
+  productRoutes, 
+  saleRoutes, 
+  campaignRoutes, 
+  aiRoutes, 
+  analyticsRoutes, 
+  notificationRoutes, 
+  dashboardRoutes 
+};
