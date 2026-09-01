@@ -25,17 +25,17 @@ app.use(express.json({
   }
 }));
 
-// General rate limiter (100 requests per 15 mins)
+// General rate limiter (1,000 requests per 15 mins for active development & dashboard polling)
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: process.env.NODE_ENV === 'production' ? 100 : 1000,
   message: { success: false, message: 'Too many requests from this IP, please try again after 15 minutes.' }
 });
 
-// Stricter AI endpoints rate limiter (20 requests per 15 mins)
+// AI endpoints rate limiter (200 requests per 15 mins)
 const aiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: process.env.NODE_ENV === 'production' ? 30 : 200,
   message: { success: false, message: 'AI limit reached. Please try again in 15 minutes.' }
 });
 

@@ -46,11 +46,18 @@ const productValidationRules = [
   validateRequest
 ];
 
+const saleValidationRules = [
+  body('productId').isMongoId().withMessage('Valid productId is required'),
+  body('quantity').isInt({ min: 1 }).withMessage('Quantity must be at least 1'),
+  body('price').isFloat({ min: 0.01 }).withMessage('Price must be greater than 0'),
+  validateRequest
+];
+
 const productRoutes = express.Router();
 productRoutes.route('/').get(protect, getProducts).post(protect, productValidationRules, createProduct);
 
 const saleRoutes = express.Router();
-saleRoutes.route('/').get(protect, getSales).post(protect, createSale);
+saleRoutes.route('/').get(protect, getSales).post(protect, saleValidationRules, createSale);
 
 const campaignRoutes = express.Router();
 campaignRoutes.route('/').get(protect, getCampaigns).post(protect, campaignValidationRules, createCampaign);
@@ -66,7 +73,7 @@ aiRoutes.route('/insights').get(protect, getInsights);
 aiRoutes.route('/insights/history').get(protect, getInsightsHistory);
 aiRoutes.route('/insights/:id/reject').post(protect, rejectInsight);
 aiRoutes.route('/actions').get(protect, getAuditActions);
-aiRoutes.route('/actions/modify').post(protect, modifyAndApproveAction);
+aiRoutes.route('/actions/modify').post(protect, campaignValidationRules, modifyAndApproveAction);
 aiRoutes.route('/actions/:id').delete(protect, deleteAuditAction);
 
 const notificationRoutes = express.Router();

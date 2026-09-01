@@ -6,6 +6,10 @@ const notificationSchema = mongoose.Schema({
     required: true, 
     ref: 'User' 
   },
+  campaignId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Campaign'
+  },
   message: { 
     type: String, 
     required: true 

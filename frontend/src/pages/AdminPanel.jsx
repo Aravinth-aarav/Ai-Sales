@@ -90,7 +90,7 @@ const AdminPanel = () => {
 
   // Safe Deletion Handlers
   const handleDeleteCampaign = async (id, title) => {
-    if (!window.confirm(`⚠️ WARNING: Are you sure you want to permanently delete the campaign "${title}"?\nThis action cannot be undone.`)) {
+    if (!window.confirm(`⚠️ WARNING: Are you sure you want to permanently delete the campaign "${title}"?\n\nDeleting this campaign will also remove its associated AI insights. Audit trail history will be preserved.`)) {
       return;
     }
     try {
@@ -406,7 +406,18 @@ const AdminPanel = () => {
                           </span>
                         </td>
                         <td className="p-4 italic text-gray-400 truncate max-w-xs">"{log.aiRecommendation}"</td>
-                        <td className="p-4 font-medium text-gray-200">{log.result}</td>
+                        <td className="p-4 font-medium text-gray-200">
+                          {log.campaignDeleted ? (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="px-2 py-0.5 rounded bg-gray-500/15 text-gray-400 border border-gray-500/25 text-[9px] font-bold uppercase tracking-wider">
+                                Campaign (deleted)
+                              </span>
+                              <span className="text-gray-400 text-xs">{log.result}</span>
+                            </div>
+                          ) : (
+                            log.result
+                          )}
+                        </td>
                         <td className="p-4 text-gray-500">{new Date(log.createdAt).toLocaleDateString()}</td>
                         <td className="p-4 text-right">
                           <button 

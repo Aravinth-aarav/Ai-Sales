@@ -96,8 +96,15 @@ const AuditTrail = () => {
                   </div>
 
                   <div className="pt-2 border-t border-white/[0.04] space-y-1">
-                    <span className="text-xs text-gray-400 block font-bold uppercase tracking-wider">Execution / Validation Result</span>
-                    <p className="text-white text-sm font-medium">{log.result}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-400 block font-bold uppercase tracking-wider">Execution / Validation Result</span>
+                      {log.campaignDeleted && (
+                        <span className="px-2 py-0.5 rounded bg-gray-500/15 text-gray-400 border border-gray-500/25 text-[9px] font-bold uppercase tracking-wider">
+                          Campaign (deleted)
+                        </span>
+                      )}
+                    </div>
+                    <p className={`text-sm font-medium ${log.campaignDeleted ? 'text-gray-400 line-through' : 'text-white'}`}>{log.result}</p>
                   </div>
                 </div>
 

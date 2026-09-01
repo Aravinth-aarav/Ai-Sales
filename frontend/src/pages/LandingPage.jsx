@@ -141,47 +141,48 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8 md:gap-4 max-w-5xl mx-auto relative">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto relative">
             {/* Step 1 */}
-            <div className="flex-1 flex flex-col items-center text-center space-y-3 px-4 z-10 relative">
+            <div className="flex flex-col items-center text-center space-y-3 px-3 z-10 relative">
               <div className="w-12 h-12 rounded-full bg-white/[0.02] border border-white/[0.08] flex items-center justify-center text-xs font-extrabold text-white shadow-lg">
                 1
               </div>
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider">Add Your Data</h3>
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">1. Add Your Data</h3>
               <p className="text-xs text-gray-500 leading-relaxed max-w-[200px]">
                 Import product catalogs and checkout transaction logs with one click.
               </p>
             </div>
 
-            {/* Arrow/Line */}
-            <div className="hidden md:block text-gray-700 shrink-0">
-              <ArrowRight size={20} />
-            </div>
-
             {/* Step 2 */}
-            <div className="flex-1 flex flex-col items-center text-center space-y-3 px-4 z-10 relative">
+            <div className="flex flex-col items-center text-center space-y-3 px-3 z-10 relative">
               <div className="w-12 h-12 rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-xs font-extrabold text-purple-400 shadow-lg">
                 2
               </div>
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider">AI Scans & Suggests</h3>
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">2. AI Detects Opportunity</h3>
               <p className="text-xs text-gray-500 leading-relaxed max-w-[200px]">
                 Gemini reviews sales metrics, highlights opportunities, and formulates copy.
               </p>
             </div>
 
-            {/* Arrow/Line */}
-            <div className="hidden md:block text-gray-700 shrink-0">
-              <ArrowRight size={20} />
-            </div>
-
             {/* Step 3 */}
-            <div className="flex-1 flex flex-col items-center text-center space-y-3 px-4 z-10 relative">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-xs font-extrabold text-white shadow-lg shadow-purple-600/20">
+            <div className="flex flex-col items-center text-center space-y-3 px-3 z-10 relative">
+              <div className="w-12 h-12 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-xs font-extrabold text-blue-400 shadow-lg">
                 3
               </div>
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider">Approve & Launch</h3>
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">3. Approve & Launch</h3>
               <p className="text-xs text-gray-500 leading-relaxed max-w-[200px]">
                 Passes policy checks and publishes instant checkout links for shoppers.
+              </p>
+            </div>
+
+            {/* Step 4 */}
+            <div className="flex flex-col items-center text-center space-y-3 px-3 z-10 relative">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-xs font-extrabold text-white shadow-lg shadow-purple-600/20">
+                4
+              </div>
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">4. Measure Impact</h3>
+              <p className="text-xs text-gray-500 leading-relaxed max-w-[200px]">
+                Track pre vs post performance baselines, conversion rates, and ROI lift.
               </p>
             </div>
           </div>

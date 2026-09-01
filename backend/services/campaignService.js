@@ -136,16 +136,20 @@ export const executeCampaignLaunch = async (merchantId, payload) => {
 
   const savedCampaign = await campaign.save();
 
-  // Create in-app notification
+  // Create in-app notification with campaignId
   await Notification.create({
     userId: merchantId,
+    campaignId: savedCampaign._id,
     message: `Campaign '${title}' is now live`,
     type: 'campaign_live'
   });
 
-  // 5. Update AIInsight status if triggered by an opportunity
+  // 5. Update AIInsight status and campaignId if triggered by an opportunity
   if (insightId) {
-    await AIInsight.findByIdAndUpdate(insightId, { status: 'actioned' });
+    await AIInsight.findByIdAndUpdate(insightId, { 
+      status: 'actioned',
+      campaignId: savedCampaign._id
+    });
 
     // Look up or create the AIAction audit log to log decision parameters
     const auditAction = await AIAction.findOne({ merchantId, insightId });
@@ -164,6 +168,7 @@ export const executeCampaignLaunch = async (merchantId, payload) => {
     }
 
     if (auditAction) {
+      auditAction.campaignId = savedCampaign._id;
       auditAction.merchantEditedValues = merchantEdits;
       auditAction.merchantDecision = 'APPROVED';
       auditAction.guardrailResult = guardrailResult;
@@ -177,6 +182,7 @@ export const executeCampaignLaunch = async (merchantId, payload) => {
       const newAudit = new AIAction({
         merchantId,
         insightId,
+        campaignId: savedCampaign._id,
         actionType: type || 'DISCOUNT_CAMPAIGN',
         originalAIProposal: { campaignDetails: { title, type, discount, marketingCopy } },
         merchantEditedValues: merchantEdits,

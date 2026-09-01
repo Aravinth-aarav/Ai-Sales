@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 const aiInsightSchema = mongoose.Schema({
   merchantId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+  campaignId: { type: mongoose.Schema.Types.ObjectId, ref: 'Campaign' },
   type: { 
     type: String, 
     required: true,

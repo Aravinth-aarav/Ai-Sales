@@ -293,10 +293,15 @@ const Campaigns = () => {
             {/* Header */}
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <BarChart3 size={20} className="text-purple-400" />
-                  Campaign Analytics: {selectedCampaign.title}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <BarChart3 size={20} className="text-purple-400" />
+                    Campaign Analytics: {selectedCampaign.title}
+                  </h3>
+                  <span className="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 rounded text-[9px] font-bold uppercase tracking-wider">
+                    Demo Campaign Performance
+                  </span>
+                </div>
                 <p className="text-xs text-gray-400 mt-1">
                   Comparative telemetry showing 30-day baseline vs active campaign lift
                 </p>

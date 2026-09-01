@@ -1,171 +1,247 @@
-# MerchantAI – AI Growth & Agentic Commerce Assistant
-> **Turn merchant data into intelligent growth actions.**
+# MerchantAI – AI-Assisted Agentic Commerce Platform
 
-MerchantAI is an **autonomous AI Growth & Agentic Commerce Platform** designed for the Razorpay Buildathon. Instead of acting as a passive chatbot, MerchantAI acts as an agentic partner: it analyzes historical checkout transaction logs, detects revenue leakages and product co-purchase opportunities, proposes validation-tested discount campaigns, enforces merchant guardrail limits, waits for merchant approval, executes the approved campaigns, generates simulated Razorpay checkout smart links, and tracks simulated campaign performance.
-
----
-
-## 🔄 1. Core Agentic Workflow
-```
-Observe (Sales logs) → Analyze (Trends) → Recommend (Opportunity) → Validate (Policy) → Approve (Merchant) → Execute (Smart Link) → Measure (Performance)
-```
+> MerchantAI is an AI-assisted agentic commerce platform that discovers merchant growth opportunities, explains its reasoning, enforces safety guardrails, executes merchant-approved campaigns through Razorpay, and measures the resulting impact.
 
 ---
 
-## 🎨 2. System Architecture
+## ❓ Problem Statement
+
+Small to medium e-commerce merchants frequently struggle to identify revenue bottlenecks, slow-moving inventory, and co-purchase opportunities hidden within their transaction data due to lack of time and analytics expertise. Existing solutions either require manual data analysis or attempt full automation without human oversight, creating financial risk when AI algorithms generate overly aggressive discount promotions. MerchantAI bridges this gap by functioning as an agentic commerce partner that combines autonomous telemetry scanning with unbypassable merchant guardrails and human approval.
+
+---
+
+## 🔄 Core Workflow (Agentic Loop)
+
+```
+Merchant Data (Seed / CSV) ➔ AI Opportunity Detection ➔ AI Reasoning & Evidence ➔ Safety Guardrail (<=15%)
+                                                                                        │
+ Audit Ledger --- Campaign Measurement --- Webhook Confirmation --- Razorpay Execution --- Merchant Decision (Approve / Edit)
+```
+
+1. **Observe**: Ingest store product catalog and checkout transaction telemetry (via instant seed or CSV upload).
+2. **Analyze**: AI Growth Agent aggregates 30-day velocity, weekend trends, and co-purchase patterns.
+3. **Recommend**: Google Gemini 3.6 Flash generates structured JSON opportunities with confidence scores and expected impact.
+4. **Explain**: Displays user-facing AI reasoning and evidence explaining why the opportunity was detected.
+5. **Guardrail**: Backend evaluates safety policies ($\le 15\%$ max discount, $1\text{--}30$ days duration).
+6. **Merchant Customize & Re-Validate**: Merchant reviews proposal, edits parameters if blocked/needed, and backend re-validates the modified payload.
+7. **Approve & Execute**: Merchant approves campaign; backend programmatically issues a Razorpay Sandbox Smart Payment Link (`https://rzp.io/i/...`).
+8. **Payment / Webhook**: Razorpay webhook receives checkout events, verifies HMAC-SHA256 signature, and updates campaign status.
+9. **Measure Impact**: Calculates before-vs-after performance baselines and visualizes lift via Recharts.
+10. **Audit**: Governance ledger records every state transition (`PROPOSED`, `BLOCKED`, `APPROVED`, `EXECUTED`).
+
+---
+
+## ✨ Key Features (Verified Implemented)
+
+- **AI-Powered Opportunity Detection with Reasoning**: Integrates Google Gemini 3.6 Flash API with structured JSON output, providing confidence scores, expected impact percentages, and concise decision rationale.
+- **Unbypassable Backend Guardrails**: Enforces server-side policy limits ($\le 15\%$ discount cap, $1\text{--}30$ day duration limits, product ownership verification). Re-validated on every merchant edit.
+- **Razorpay Sandbox Payment Links & Webhooks**: Programmatically creates payment links via Razorpay's API and handles real-time payment notifications via HMAC-SHA256 verified webhooks.
+- **Before-vs-After Campaign Analytics**: Captures baseline performance metrics upon campaign activation and renders comparative lift visualizations (clearly labeled as **Demo Campaign Performance**).
+- **Comprehensive AI Audit Trail**: Fully traceable ledger logging AI suggestions, original values, merchant edits, guardrail results, and execution timestamps.
+- **Cascade-Safe Campaign Deletion**: Deletes non-actionable insights and notifications while preserving historical audit logs marked with `campaignDeleted: true`.
+- **Dual Data Input System**: Supports instant demo telemetry seeding (500+ realistic transaction logs) or real CSV sales data import with row-level validation.
+- **In-App & Email Notifications**: Real-time activity feed for live campaigns, payment updates, and email dispatch via Nodemailer.
+- **Role-Based Authorization**: Enforces strict backend authorization for admin endpoints (`admin` middleware).
+- **Security & Rate Limiting**: Separate rate limiters for general routes vs expensive AI endpoints, Helmet security headers, and JWT session gating.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend**: React 18, Vite, Tailwind CSS, Recharts, Lucide React, Axios.
+- **Backend**: Node.js, Express.js.
+- **Database**: MongoDB Atlas + Mongoose ODM.
+- **AI Engine**: Google Gemini API (`gemini-3.6-flash`).
+- **Payments**: Razorpay Payment Links API + Razorpay Webhooks.
+- **Authentication**: JSON Web Tokens (JWT) with Authorization header gating.
+- **Middleware & Utilities**: `express-validator`, `express-rate-limit`, `helmet`, `multer` (in-memory storage), `csv-parser`, `nodemailer`.
+
+---
+
+## 📐 Architecture Diagram
 
 ```mermaid
 graph TD
     Merchant[Merchant Admin] -->|Interacts| Frontend[React + Vite Frontend]
-    Frontend -->|Requests / Auth Token| Express[Express API Backend]
-    Express -->|Validates JWT| Auth[Authentication Middleware]
-    Auth -->|Triggers| GrowthAgent[AI Growth Agent Service]
+    Frontend -->|JWT Auth Requests| Express[Express.js Node.js Backend]
     
-    subgraph Core Services
-        GrowthAgent -->|Summarizes Data| Analytics[Analytics Service]
-        GrowthAgent -->|Fetches History| Mongo[(MongoDB Atlas)]
-        GrowthAgent -->|Requests Insights| Gemini[Gemini Service]
-        Gemini -->|POST Request| GeminiAPI[Google Gemini API]
+    subgraph Data Ingestion Layer
+        Express -->|Seed Demo Data| SeedEngine[Demo Data Generator]
+        Express -->|CSV Upload| MulterEngine[Multer + CSV-Parser Pipeline]
+        SeedEngine --> Mongo[(MongoDB Atlas)]
+        MulterEngine --> Mongo
     end
 
-    GeminiAPI -->|Structured JSON Response| Gemini
-    Gemini --> GrowthAgent
-    GrowthAgent -->|Detects| Opportunity[AI Opportunity / Insight]
-    Opportunity -->|Formulates| Action[Action Proposal]
-    Action -->|Checks Policy Limits| Guardrail[Policy Guardrails Validation]
-    
-    Guardrail -->|If Fails: Flags Blocked| MerchantApproval[Merchant Review & Approval Panel]
-    Guardrail -->|If Valid: Flags Proposed| MerchantApproval
-    
-    MerchantApproval -->|Approved / Modified| CampaignService[Campaign Service]
-    CampaignService -->|Creates Checkout Link| Razorpay[Simulated/Live Razorpay Smart Link]
-    CampaignService -->|Saves Audit Trail| Audit[(AIAction Audit Log)]
-    CampaignService -->|Saves Campaign| Mongo
-    
-    Mongo -->|Loads Metrics| PerfAnalytics[Campaign Performance & Analytics Dashboard]
-    PerfAnalytics -->|Visualizes Lift| Frontend
+    subgraph Autonomous AI Reasoning Layer
+        Express -->|Telemetry Aggregation| AnalyticsSvc[Analytics Service]
+        AnalyticsSvc -->|Prompt Context| GeminiSvc[Gemini AI Service]
+        GeminiSvc -->|JSON Mode Prompt| GeminiAPI[Google Gemini 3.6 Flash API]
+        GeminiAPI -->|Structured Insights| GeminiSvc
+        GeminiSvc -->|Store Insight| AIInsightDoc[(AIInsight Collection)]
+    end
+
+    subgraph Safety Guardrail & Approval Layer
+        AIInsightDoc -->|Propose Action| GuardrailSvc[Policy Guardrails Engine]
+        GuardrailSvc -->|Check Limits <=15%| AuditLog[(AIAction Audit Ledger)]
+        GuardrailSvc -->|Passed / Flagged| ApprovalUI[Merchant Review & Approval Panel]
+    end
+
+    subgraph Campaign Execution & Payment Webhook
+        ApprovalUI -->|Approved Launch| CampaignSvc[Campaign Launch Service]
+        CampaignSvc -->|API Request| RazorpayAPI[Razorpay Payment Link API]
+        RazorpayAPI -->|Smart Link generated| CampaignSvc
+        CampaignSvc -->|Save Campaign| CampaignDoc[(Campaign Collection)]
+        CampaignSvc -->|Send Email| Nodemailer[Email Service]
+        RazorpayAPI -->|Payment Webhook Event| WebhookSvc[Razorpay Webhook Handler]
+        WebhookSvc -->|Verify HMAC-SHA256| WebhookSvc
+        WebhookSvc -->|Update Campaign Status| CampaignDoc
+    end
+
+    subgraph Analytics & Audit Preservation
+        CampaignDoc -->|Performance Data| LiftAnalytics[Before-vs-After Lift Visualization]
+        CampaignDoc -->|Delete Request| CascadeDelete[Cascade Cleanup Engine]
+        CascadeDelete -->|Delete| AIInsightDoc
+        CascadeDelete -->|Flag campaignDeleted=true| AuditLog
+    end
 ```
 
 ---
 
-## ✨ 3. Core Features & Polish Additions
+## 🗄️ Database Schema Overview
 
-* **SaaS Public Landing Page (`/` route)**: A clean, modern public-facing homepage containing:
-  * **Hero Section**: Headline ("AI-Powered Campaigns for Smarter Merchants"), subtext, and call-to-action button redirecting to the workspace.
-  * **Features Showcase**: Feature cards (AI Suggestions, Secure Payments, Analytics, Admin controls) with `lucide-react` iconography.
-  * **How It Works Flow**: Visual 3-step sequence ("1. Add Your Data ➔ 2. AI Suggests Campaign ➔ 3. Approve & Launch").
-* **AI Decision Transparency (Reasoning Display)**:
-  * Proposes opportunities with structured JSON outputs: suggestion title/type, detected issue, expected impact, confidence score, and **AI Rationale** (`reasoning` field).
-  * Prominently displays suggestions on the dashboard card with detailed reasoning and confidence level metrics below.
-* **Before-vs-After Lift Analytics**:
-  * Generated mock baseline metrics (`beforeStats`) and campaign metrics (`afterStats`) stored directly in the MongoDB campaign record upon activation.
-  * Embeds an analytics comparison view with a **Recharts** bar chart comparing Revenue, Orders, and Conversions side-by-side, plus Estimated ROI and Redemption Count cards.
-* **Razorpay Webhook Integration**:
-  * Exposes an unprotected `/api/webhook/razorpay` endpoint to securely receive checkout event notifications from Razorpay.
-  * Uses cryptographic signature verification via HMAC-SHA256 and the raw request body buffer.
-  * Extracts the metadata `campaign_id` from incoming payment notes (`payment.captured` or `payment_link.paid`) to automatically update the campaign status to `active` in MongoDB.
-* **Policy Guardrails & Prompt Engineering**:
-  * Added prompt-level directives constraining Gemini to suggest discount values between `5%` and `15%` by default.
-  * Enforces server-side guardrail validations (max 15% discount, max 30-day duration) to block invalid overrides.
-* **Responsive Layout Design**:
-  * Configured layout grids (`xl:grid-cols-3` in `Dashboard.jsx`) to stack cleanly on medium screens, preventing cramped columns.
-  * Implemented maximum heights (`max-h-24`) and vertical scrollbars for long text blocks (detected issue, AI rationale, marketing copy).
-  * Retains local user session across page refreshes by preventing destructive redirects during silent refresh checks.
+- **User**: Stores merchant credentials, names, emails, roles (`merchant` / `admin`), and password hashes.
+- **Product**: Catalog items belonging to a merchant (`merchantId`, `name`, `price`, `category`).
+- **Sale**: Historical order transaction telemetry (`merchantId`, `productId`, `quantity`, `revenue`, `date`).
+- **Campaign**: Active/past marketing promotions (`merchantId`, `title`, `type`, `discount`, `paymentLink`, `status`, `beforeStats`, `afterStats`).
+- **AIInsight**: AI-detected growth recommendations (`merchantId`, `campaignId`, `type`, `title`, `reasoning`, `confidenceScore`, `status`).
+- **AIAction**: Permanent audit ledger (`merchantId`, `insightId`, `campaignId`, `campaignDeleted`, `originalAIProposal`, `merchantEditedValues`, `merchantDecision`, `guardrailResult`, `status`).
+- **Notification**: User activity feed alerts (`userId`, `campaignId`, `message`, `type`, `read`).
 
 ---
 
-## 🛠️ 4. Tech Stack
+## 🌐 API Endpoints Reference
 
-* **Frontend**: React, Vite, Tailwind CSS v4, Recharts, Lucide Icons, Axios.
-* **Backend**: Node.js, Express.js, MongoDB, Mongoose, JSONWebToken, dotenv, Razorpay API.
-* **AI Models**: Google Gemini API via official model endpoints (`gemini-3.6-flash`).
+| Category | Method | Endpoint | Access Level | Description |
+|---|---|---|---|---|
+| **Auth** | `POST` | `/api/auth/register` | Public | Register a new merchant user |
+| **Auth** | `POST` | `/api/auth/login` | Public | Authenticate user & issue JWT |
+| **Auth** | `GET` | `/api/auth/profile` | Protected | Fetch current user profile |
+| **Data Management** | `POST` | `/api/data/seed` | Protected (Admin) | Seed mock telemetry (15 products, 500+ sales) |
+| **Data Management** | `POST` | `/api/data/import` | Protected (Admin) | Ingest CSV sales file (Multer + csv-parser) |
+| **Data Management** | `GET` | `/api/data/sample-csv` | Public | Serve sample sales CSV template |
+| **AI Agent** | `POST` | `/api/ai/analyze` | Protected | Trigger Gemini 3.6 Flash telemetry analysis |
+| **AI Agent** | `GET` | `/api/ai/insights/history` | Protected | Fetch historical AI growth insights |
+| **AI Agent** | `POST` | `/api/ai/actions/reject` | Protected | Dismiss an AI opportunity recommendation |
+| **AI Agent** | `GET` | `/api/ai/actions` | Protected | Fetch AI action audit trail ledger |
+| **AI Agent** | `POST` | `/api/ai/actions/modify` | Protected | Submit modified proposal for re-validation & launch |
+| **Campaigns** | `GET` | `/api/campaigns` | Protected | List all merchant campaigns |
+| **Campaigns** | `POST` | `/api/campaigns` | Protected | Launch campaign & generate Razorpay Smart Link |
+| **Campaigns** | `DELETE` | `/api/campaigns/:id` | Protected (Admin) | Delete campaign with cascade cleanup & audit preservation |
+| **Analytics** | `GET` | `/api/analytics/dashboard` | Protected | Fetch sales metrics & baseline performance data |
+| **Notifications** | `GET` | `/api/notifications` | Protected | Fetch current user notifications (limit 20) |
+| **Notifications** | `PATCH` | `/api/notifications/:id/read` | Protected | Mark single notification as read |
+| **Notifications** | `PATCH` | `/api/notifications/read-all` | Protected | Mark all user notifications as read |
+| **Webhooks** | `POST` | `/api/webhook/razorpay` | Public (HMAC Verified) | Process Razorpay payment events |
 
 ---
 
-## 🚀 5. Local Setup
+## 🚀 Setup & Installation Instructions
 
 ### Prerequisites
-* Node.js (v18+)
-* MongoDB Atlas Cluster account or Local MongoDB
-* Google AI Studio Gemini API Key
-* Razorpay Test Mode Key & Secret
+- **Node.js**: v18.0.0 or higher
+- **MongoDB Atlas**: Cluster URI connection string
+- **Google Gemini API Key**: Google AI Studio API key
+- **Razorpay Account**: Sandbox Key ID, Key Secret, and Webhook Secret
 
-### Backend Configuration
-1. Open a terminal and navigate to the `backend` directory.
-2. Run `npm install` to load dependencies.
-3. Create a `.env` file from the placeholder templates:
-   ```env
-   PORT=5000
-   MONGO_URI=your_mongodb_atlas_connection_string
-   JWT_SECRET=your_jwt_secret_token
-   GEMINI_API_KEY=your_gemini_api_key
-   RAZORPAY_KEY_ID=your_razorpay_key_id
-   RAZORPAY_KEY_SECRET=your_razorpay_secret_key
-   RAZORPAY_WEBHOOK_SECRET=your_razorpay_webhook_secret
-   ```
-4. Start the backend development server:
-   ```bash
-   npm run dev
-   ```
+### 1. Repository Setup
+```bash
+git clone https://github.com/Aravinth-aarav/Ai-Sales.git
+cd Ai-Sales
+```
 
-### Frontend Configuration
-1. Open a new terminal and navigate to the `frontend` directory.
-2. Run `npm install` to install dependencies.
-3. Start the Vite server:
-   ```bash
-   npm run dev
-   ```
-4. Access the web app in your browser at `http://localhost:5173/`.
+### 2. Backend Configuration
+```bash
+cd backend
+npm install
+```
+Create a `.env` file in the `backend/` directory:
+```env
+PORT=5000
+MONGO_URI=your_mongodb_atlas_connection_string
+JWT_SECRET=your_jwt_secret_token
+GEMINI_API_KEY=your_gemini_api_key
+RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+RAZORPAY_WEBHOOK_SECRET=your_razorpay_webhook_secret
+```
+Start the backend server:
+```bash
+npm run dev
+```
 
----
+### 3. Frontend Configuration
+```bash
+cd ../frontend
+npm install
+```
+Create a `.env` file in the `frontend/` directory (optional):
+```env
+VITE_API_BASE_URL=http://localhost:5000
+```
+Start the frontend development server:
+```bash
+npm run dev
+```
+Open `http://localhost:5173/` in your browser.
 
-## 👨‍⚖️ 6. Demo Judge Evaluation Flow (2-3 Minutes)
-
-1. **Public Homepage**: Start at `http://localhost:5173/` to see the public landing page. Click **Get Started** to go to the login screen.
-2. **Login**: Authenticate using credentials `admin@example.com` / `password123` to enter the protected dashboard.
-3. **Load Demo Data**: In the sidebar's footer, click **Load Demo Data**. This will generate 500+ transaction records simulating real store analytics (such as low Monday/Tuesday sales and Bluetooth speakers underperforming).
-4. **Detect AI Opportunities**: Click **Detect Opportunities** under the AI Growth Agent widget. Wait as it runs through its loading steps:
-   - *Aggregating sales metrics...*
-   - *Detecting store opportunities...*
-   - *Checking policy guardrails...*
-5. **Review Action & Guardrails**:
-   * Inspect the suggestion, the detected issue, the reasoning, and the AI confidence percentage card.
-   * If you try to custom-edit the discount to exceed 15%, the system will block the action and display a guardrail message.
-6. **Launch Campaign**: Click **Approve & Launch**. The AI insight transitions to "Launched", generating a payment link.
-7. **Verify Active Promotion & Lift Analytics**:
-   * Click **Campaigns** in the sidebar. Locate your active campaign.
-   * Click **View Lift Analytics** on the card.
-   * Check the comparative charts modal (visualizing Before vs After Revenue, Sales, and Conversions) and key performance metrics cards.
-8. **View Audit Logs**: Click **AI Audit Trail** in the sidebar to review the full historical ledger of actions proposed, approved, rejected, or blocked.
-
----
-
-## 🔧 7. What Broke & How We Solved It
-
-### Challenge 1: Tailwind CSS v4 Build Failure
-* **What Broke**: The frontend failed to compile due to configuration mismatches between Tailwind CSS v4 styles and PostCSS scripts.
-* **Solution**: Migrated standard directives to modern Tailwind `@import "tailwindcss"`, added `@tailwindcss/postcss`, and updated the `postcss.config.js` to compile correctly.
-
-### Challenge 2: Gemini API Model Migration
-* **What Broke**: AI suggestions threw a `500 Internal Server Error` due to deprecated model paths.
-* **Solution**: Reconfigured the backend `geminiService.js` to point to the current **`gemini-3.6-flash`** API model.
-
-### Challenge 3: Page Navigation State Destruction
-* **What Broke**: Clicking away from the Dashboard destroyed the loaded AI recommendation state, forcing users to repeatedly fetch data.
-* **Solution**: Implemented **session persistence via localStorage** with 1-hour cache TTL and force-refresh invalidations.
-
-### Challenge 4: Missing Request Parameters on Launch
-* **What Broke**: The campaign launch request returned `400 Bad Request` validation errors because `durationDays` was not sent in the default launch payload.
-* **Solution**: Updated the frontend payload structure in `InsightCard.jsx` to parse and include `durationDays` matching the express-validator schema rules.
-
-### Challenge 5: AI Discount Exceeding Margins
-* **What Broke**: The AI agent occasionally suggested high promotions (like 20-25% off) that cut too deep into merchant operating margins.
-* **Solution**: Introduced a backend **Policy Guardrails validation layer** that scans the payload, blocks actions exceeding 15% discount limits, and logs a validation reason.
+### 4. Webhook Setup Note
+To test Razorpay webhooks locally:
+1. Expose port `5000` via ngrok: `ngrok http 5000`.
+2. Copy your ngrok HTTPS URL (`https://<ngrok-id>.ngrok-free.app/api/webhook/razorpay`).
+3. In **Razorpay Dashboard ➔ Settings ➔ Webhooks**, add the endpoint URL, select `payment.captured` / `payment_link.paid`, and set your `RAZORPAY_WEBHOOK_SECRET`.
 
 ---
 
-## ⚠️ 8. Known Limitations
+## 🎬 Demo Walkthrough (Buildathon Scenario)
 
-* **Simulated Razorpay**: The Razorpay Smart Link is a simulated demo integration (`https://rzp.io/i/pl_XXXX`). No live money is processed.
-* **Synthetic Demo Data**: The "Load Demo Data" button creates high-fidelity synthetic transactions for evaluation purposes.
-* **Cached Insights**: Saved insights expire after 1 hour (TTL). Merchants can click "Force Refresh" to evict the cache and generate a fresh analysis based on modified checkout data.
+1. **Public Landing Page**: Visit `http://localhost:5173/`. Review hero section, 4 feature cards, and 4-step workflow. Click **Get Started**.
+2. **Merchant Login**: Sign in as merchant using `admin@example.com` / `password123`.
+3. **Load Demo Data**: In the Data Management section, click **Load Demo Data** to populate 500+ realistic transaction records.
+4. **Dashboard Workspace**: Inspect aggregated revenue, order count, sales trends, and top products.
+5. **Detect Opportunities**: Click **Detect Opportunities**. Gemini analyzes store data and outputs structured insights with confidence scores and reasoning.
+6. **Guardrail Block Demo**: If an AI proposal or custom edit exceeds 15% discount, the UI displays **Action Blocked by Policy**.
+7. **Merchant Customization**: Click **Custom Edit Options** and change discount from 20% to 10%.
+8. **Re-Validation & Launch**: Click **Apply Modifications & Launch**. Server re-validates payload, generates a Razorpay Sandbox Smart Link (`https://rzp.io/i/...`), and activates campaign.
+9. **Simulated Payment**: Click payment options (UPI, Card, Netbanking, QR) to simulate customer checkout.
+10. **Webhook Processing**: Razorpay webhook processes `payment.captured`, verifies HMAC signature, and updates campaign state.
+11. **View Lift Analytics**: Click **View Lift Analytics** on the active campaign card to view Before vs After Recharts visualization and ROI lift.
+12. **Audit Governance**: Open **AI Audit Trail** to view the recorded lifecycle (`AI Suggested` ➔ `Blocked` ➔ `Merchant Edited` ➔ `Revalidated` ➔ `Executed`).
+13. **Cascade Deletion**: In Admin Panel, delete a campaign to demonstrate cascade cleanup of insights/notifications while preserving governance logs marked as `Campaign (deleted)`.
+
+---
+
+## 🔒 Security Notes
+
+- **Backend Guardrail Enforcement**: Safety policies ($\le 15\%$ discount cap, $1\text{--}30$ day duration) run strictly on the backend to prevent API or frontend bypass.
+- **HMAC-SHA256 Webhook Verification**: Razorpay webhook payloads are authenticated using cryptographic HMAC-SHA256 signatures over the raw request buffer.
+- **Rate Limiting**: Endpoint-specific limiters prevent API quota exhaustion (`aiLimiter` on `/api/ai` endpoints).
+- **Input Validation**: `express-validator` sanitizes incoming write payloads before business logic execution.
+- **Security Headers**: Helmet middleware enables HTTP security headers.
+- **Server-Side Authorization**: Admin-only routes are protected server-side with `admin` role middleware (`403 Forbidden`).
+
+---
+
+## ⚠️ Known Limitations & Scope
+
+- **Razorpay Sandbox Mode**: Integrates with Razorpay Sandbox APIs. No live real-world currency is debited.
+- **Simulated Lift Telemetry**: Baseline vs active campaign lift numbers are generated once upon campaign activation for evaluation and performance demonstration purposes.
+- **Single Deployment Instance**: Built as a single-instance demonstration application rather than a multi-tenant enterprise system.
+
+---
+
+## 🔮 Future Scope
+
+The following features represent future enhancement directions and are **not** currently implemented:
+- **Multi-Tenant SaaS Subscriptions**: Automated subscription billing and multi-merchant tenant isolation.
+- **Queue-Based Asynchronous AI Processing**: Redis / BullMQ worker queues for asynchronous Gemini batch telemetry processing at scale.
+- **Multi-Campaign Comparative Lift Analysis**: Advanced multi-variable campaign A/B testing dashboard.

@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 const aiActionSchema = mongoose.Schema({
   merchantId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
   insightId: { type: mongoose.Schema.Types.ObjectId, ref: 'AIInsight' },
+  campaignId: { type: mongoose.Schema.Types.ObjectId, ref: 'Campaign' },
+  campaignDeleted: { type: Boolean, default: false },
   actionType: { type: String, required: true }, // e.g. DISCOUNT_CAMPAIGN, BUNDLE_CAMPAIGN
   originalAIProposal: { type: mongoose.Schema.Types.Mixed, required: true },
   merchantEditedValues: { type: mongoose.Schema.Types.Mixed, default: null },
