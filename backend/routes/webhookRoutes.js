@@ -63,11 +63,9 @@ router.post('/razorpay', async (req, res) => {
           console.log(`Campaign ${campaignId} updated to active & PAID via webhook success`);
           
           // Trigger in-app notification
-          const amountRaw = payload.payment?.entity?.amount || 1000;
-          const amountFormatted = (amountRaw / 100).toFixed(2);
           await Notification.create({
             userId: campaign.merchantId,
-            message: `Payment of ₹${amountFormatted} received for Campaign '${campaign.title}'`,
+            message: `Payment of ₹${amountFormatted.toFixed(2)} received for Campaign '${campaign.title}'`,
             type: 'payment_success'
           });
 
