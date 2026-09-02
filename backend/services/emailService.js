@@ -50,7 +50,7 @@ export const sendEmailNotification = async ({ to, subject, html, text }) => {
   try {
     const client = await getTransporter();
     const info = await client.sendMail({
-      from: '"MerchantAI Assistant" <noreply@merchantai.com>',
+from: `"MerchantAI Assistant" <${process.env.SMTP_USER}>`,
       to,
       subject,
       text: text || subject,

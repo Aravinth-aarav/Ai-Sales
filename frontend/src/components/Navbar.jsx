@@ -13,7 +13,7 @@ const Navbar = () => {
   const fetchNotifications = async () => {
     try {
       if (!user?.token) return;
-      const { data } = await axios.get('http://localhost:5000/api/notifications', {
+      const { data } = await axios.get('/api/notifications', {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setNotifications(data);
@@ -44,7 +44,7 @@ const Navbar = () => {
   const handleMarkAllRead = async () => {
     try {
       if (!user?.token) return;
-      await axios.patch('http://localhost:5000/api/notifications/read-all', {}, {
+      await axios.patch('/api/notifications/read-all', {}, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
@@ -56,7 +56,7 @@ const Navbar = () => {
   const handleMarkRead = async (id) => {
     try {
       if (!user?.token) return;
-      await axios.patch(`http://localhost:5000/api/notifications/${id}/read`, {}, {
+      await axios.patch(`/api/notifications/${id}/read`, {}, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setNotifications(prev => prev.map(n => n._id === id ? { ...n, read: true } : n));

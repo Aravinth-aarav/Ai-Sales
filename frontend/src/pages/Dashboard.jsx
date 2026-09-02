@@ -67,19 +67,19 @@ const Dashboard = () => {
     setFetchError(false);
     try {
       // 1. Fetch sales list for chart
-      const { data: salesData } = await axios.get('http://localhost:5000/api/sales', {
+      const { data: salesData } = await axios.get('/api/sales', {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setSales(salesData);
 
       // 2. Fetch aggregated dashboard metrics
-      const { data: metricsData } = await axios.get('http://localhost:5000/api/analytics/dashboard', {
+      const { data: metricsData } = await axios.get('/api/analytics/dashboard', {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setMetrics(metricsData);
 
       // 3. Fetch summary cards data
-      const { data: summaryData } = await axios.get('http://localhost:5000/api/dashboard/summary', {
+      const { data: summaryData } = await axios.get('/api/dashboard/summary', {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setSummary(summaryData);
@@ -119,7 +119,7 @@ const Dashboard = () => {
     setLoadingInsight(true);
     setInsightError('');
     try {
-      const { data } = await axios.get('http://localhost:5000/api/ai/insights', {
+      const { data } = await axios.get('/api/ai/insights', {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       
@@ -147,7 +147,7 @@ const Dashboard = () => {
   const handleSeedDemo = async () => {
     setLoadingSeed(true);
     try {
-      await axios.post('http://localhost:5000/api/analytics/demo/load', {}, {
+      await axios.post('/api/analytics/demo/load', {}, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       toast.success('🎉 Demo data successfully initialized! Welcome to MerchantAI.');
@@ -192,7 +192,7 @@ const Dashboard = () => {
   }
 
   // Dashboard Empty State for First-Time Users
-  if (summary.totalCampaigns === 0 && !loadingSummary) {
+  if (sales.length === 0 && !loadingMetrics && !loadingSummary) {
     return (
       <div className="space-y-8">
         {/* Header */}

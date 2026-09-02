@@ -18,7 +18,7 @@ const Campaigns = () => {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        const { data } = await axios.get('http://localhost:5000/api/campaigns', {
+        const { data } = await axios.get('/api/campaigns', {
           headers: { Authorization: `Bearer ${user.token}` }
         });
         setCampaigns(data);

@@ -46,9 +46,9 @@ const AdminPanel = () => {
       const headers = { Authorization: `Bearer ${user.token}` };
       
       const [campaignsRes, usersRes, auditRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/campaigns', { headers }),
-        axios.get('http://localhost:5000/api/auth/users', { headers }),
-        axios.get('http://localhost:5000/api/ai/actions', { headers })
+        axios.get('/api/campaigns', { headers }),
+        axios.get('/api/auth/users', { headers }),
+        axios.get('/api/ai/actions', { headers })
       ]);
 
       setCampaigns(campaignsRes.data);
@@ -94,7 +94,7 @@ const AdminPanel = () => {
       return;
     }
     try {
-      await axios.delete(`http://localhost:5000/api/campaigns/${id}`, {
+      await axios.delete(`/api/campaigns/${id}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setCampaigns(campaigns.filter(c => c._id !== id));
@@ -114,7 +114,7 @@ const AdminPanel = () => {
       return;
     }
     try {
-      await axios.delete(`http://localhost:5000/api/auth/users/${id}`, {
+      await axios.delete(`/api/auth/users/${id}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setUsers(users.filter(u => u._id !== id));
@@ -131,7 +131,7 @@ const AdminPanel = () => {
       return;
     }
     try {
-      await axios.delete(`http://localhost:5000/api/ai/actions/${id}`, {
+      await axios.delete(`/api/ai/actions/${id}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setAuditLogs(auditLogs.filter(log => log._id !== id));

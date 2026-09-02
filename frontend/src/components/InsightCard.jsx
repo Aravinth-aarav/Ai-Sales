@@ -29,7 +29,7 @@ const InsightCard = ({ insightResult, user, onApprove, onClose }) => {
         durationDays: parseInt(durationDays, 10) || 7
       };
 
-      await axios.post('http://localhost:5000/api/campaigns', payload, {
+      await axios.post('/api/campaigns', payload, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       
@@ -57,7 +57,7 @@ const InsightCard = ({ insightResult, user, onApprove, onClose }) => {
         durationDays: parseInt(durationDays, 10)
       };
 
-      await axios.post('http://localhost:5000/api/ai/actions/modify', payload, {
+      await axios.post('/api/ai/actions/modify', payload, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
 
@@ -74,7 +74,7 @@ const InsightCard = ({ insightResult, user, onApprove, onClose }) => {
     if (!window.confirm('Dismiss this AI recommendation?')) return;
     setLoading(true);
     try {
-      await axios.post(`http://localhost:5000/api/ai/insights/${insight._id}/reject`, {}, {
+      await axios.post(`/api/ai/insights/${insight._id}/reject`, {}, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       onClose();

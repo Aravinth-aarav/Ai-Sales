@@ -11,7 +11,7 @@ dotenv.config();
 connectDB();
 
 const app = express();
-
+app.set('trust proxy', 1);
 // Apply security headers
 app.use(helmet());
 

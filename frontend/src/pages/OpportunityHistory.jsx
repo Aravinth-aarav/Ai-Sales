@@ -11,7 +11,7 @@ const OpportunityHistory = () => {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const { data } = await axios.get('http://localhost:5000/api/ai/insights/history', {
+        const { data } = await axios.get('/api/ai/insights/history', {
           headers: { Authorization: `Bearer ${user.token}` }
         });
         setHistory(data);

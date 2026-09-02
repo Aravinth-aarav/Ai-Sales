@@ -35,7 +35,7 @@ const Pay = () => {
   useEffect(() => {
     const fetchCampaign = async () => {
       try {
-        const { data } = await axios.get('http://localhost:5000/api/campaigns', {
+        const { data } = await axios.get('/api/campaigns', {
           headers: { Authorization: `Bearer ${user.token}` }
         });
         const found = data.find(c => c._id === id);
@@ -76,7 +76,7 @@ const Pay = () => {
       
       if (upiIdToUse === 'success@razorpay') {
         // Trigger payment.captured webhook
-        await axios.post('http://localhost:5000/api/webhooks/razorpay', {
+        await axios.post('/api/webhook/razorpay', {
           event: 'payment.captured',
           payload: {
             payment: {
@@ -98,7 +98,7 @@ const Pay = () => {
         toast.success('Simulated payment processed successfully!');
       } else {
         // Trigger payment.failed webhook
-        await axios.post('http://localhost:5000/api/webhooks/razorpay', {
+        await axios.post('/api/webhook/razorpay', {
           event: 'payment.failed',
           payload: {
             payment: {

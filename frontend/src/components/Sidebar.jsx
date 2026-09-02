@@ -24,7 +24,7 @@ const Sidebar = () => {
     if (!window.confirm('This will overwrite your existing sales, products, and campaign data. Proceed?')) return;
     setLoadingDemo(true);
     try {
-      await axios.post('http://localhost:5000/api/analytics/demo/load', {}, {
+      await axios.post('/api/analytics/demo/load', {}, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       alert('Demo data loaded successfully!');
@@ -42,7 +42,7 @@ const Sidebar = () => {
     if (!window.confirm('Are you sure you want to wipe your store database?')) return;
     setLoadingReset(true);
     try {
-      await axios.post('http://localhost:5000/api/analytics/demo/reset', {}, {
+      await axios.post('/api/analytics/demo/reset', {}, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       alert('Workspace cleared.');

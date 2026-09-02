@@ -25,7 +25,7 @@ const DataImportSection = ({ onSuccess }) => {
   const handleLoadDemo = async () => {
     setLoadingDemo(true);
     try {
-      await axios.post('http://localhost:5000/api/analytics/demo/load', {}, {
+      await axios.post('/api/analytics/demo/load', {}, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       toast.success('🎉 Demo data successfully initialized!');
@@ -57,7 +57,7 @@ const DataImportSection = ({ onSuccess }) => {
     formData.append('file', file);
 
     try {
-      const { data } = await axios.post('http://localhost:5000/api/data/import', formData, {
+      const { data } = await axios.post('/api/data/import', formData, {
         headers: { 
           Authorization: `Bearer ${user.token}`,
           'Content-Type': 'multipart/form-data'
@@ -84,7 +84,7 @@ const DataImportSection = ({ onSuccess }) => {
 
   // Handle Sample CSV Download
   const handleDownloadSample = () => {
-    window.open('http://localhost:5000/api/data/sample-csv', '_blank');
+    window.open('/api/data/sample-csv', '_blank');
   };
 
   return (
