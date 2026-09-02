@@ -87,3 +87,13 @@ export const deleteCampaign = asyncHandler(async (req, res) => {
     throw new Error(`Failed to clean up and delete campaign: ${error.message}`);
   }
 });
+
+// @desc    Get all payment history for admin panel
+// @route   GET /api/campaigns/payments
+// @access  Private/Admin
+export const getPaymentHistory = asyncHandler(async (req, res) => {
+  const payments = await Campaign.find({ isPaid: true })
+    .populate('merchantId', 'name email')
+    .sort({ paidAt: -1, updatedAt: -1 });
+  res.json(payments);
+});

@@ -50,9 +50,17 @@ router.post('/razorpay', async (req, res) => {
       const campaign = await Campaign.findById(campaignId);
       if (campaign) {
         if (event === 'payment.captured' || event === 'payment_link.paid') {
+          const amountRaw = payload.payment?.entity?.amount || 1000;
+          const amountFormatted = parseFloat((amountRaw / 100).toFixed(2));
+          
           campaign.status = 'active';
+          campaign.isPaid = true;
+          campaign.paymentStatus = 'PAID';
+          campaign.paymentId = payload.payment?.entity?.id || `TXN_${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+          campaign.paidAmount = amountFormatted;
+          campaign.paidAt = new Date();
           await campaign.save();
-          console.log(`Campaign ${campaignId} updated to active via webhook success`);
+          console.log(`Campaign ${campaignId} updated to active & PAID via webhook success`);
           
           // Trigger in-app notification
           const amountRaw = payload.payment?.entity?.amount || 1000;

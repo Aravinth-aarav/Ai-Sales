@@ -92,14 +92,17 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    const timer = setTimeout(() => {
+      fetchData();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [user]);
 
   // Loading animation sequencer
   useEffect(() => {
     let timer;
     if (loadingInsight) {
-      setLoadingStep(1);
+      const stepTimer = setTimeout(() => setLoadingStep(1), 0);
       timer = setInterval(() => {
         setLoadingStep(prev => {
           if (prev >= 3) {
@@ -109,10 +112,11 @@ const Dashboard = () => {
           return prev + 1;
         });
       }, 1200);
-    } else {
-      setLoadingStep(0);
+      return () => {
+        clearTimeout(stepTimer);
+        clearInterval(timer);
+      };
     }
-    return () => clearInterval(timer);
   }, [loadingInsight]);
 
   const handleGetInsight = async () => {

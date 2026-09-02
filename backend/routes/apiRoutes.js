@@ -3,7 +3,7 @@ import multer from 'multer';
 import { body, validationResult } from 'express-validator';
 import { getProducts, createProduct } from '../controllers/productController.js';
 import { getSales, createSale } from '../controllers/saleController.js';
-import { getCampaigns, createCampaign, deleteCampaign } from '../controllers/campaignController.js';
+import { getCampaigns, createCampaign, deleteCampaign, getPaymentHistory } from '../controllers/campaignController.js';
 import { 
   getInsights, 
   getInsightsHistory, 
@@ -60,6 +60,7 @@ const saleRoutes = express.Router();
 saleRoutes.route('/').get(protect, getSales).post(protect, saleValidationRules, createSale);
 
 const campaignRoutes = express.Router();
+campaignRoutes.route('/payments').get(protect, getPaymentHistory);
 campaignRoutes.route('/').get(protect, getCampaigns).post(protect, campaignValidationRules, createCampaign);
 campaignRoutes.route('/:id').delete(protect, deleteCampaign);
 

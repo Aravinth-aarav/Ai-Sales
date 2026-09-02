@@ -18,6 +18,13 @@ const campaignSchema = mongoose.Schema({
   approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   approvedAt: { type: Date },
   
+  // Payment Details
+  isPaid: { type: Boolean, default: false },
+  paymentStatus: { type: String, default: 'UNPAID' },
+  paymentId: { type: String },
+  paidAmount: { type: Number, default: 0 },
+  paidAt: { type: Date },
+  
   // Performance Metrics
   ordersCount: { type: Number, default: 0 },
   actualRevenue: { type: Number, default: 0 },

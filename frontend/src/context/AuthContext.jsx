@@ -34,18 +34,22 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('userInfo');
-
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      silentRefresh();
-    }
+    const timer = setTimeout(() => {
+      const storedUser = localStorage.getItem('userInfo');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+        silentRefresh();
+      }
+    }, 0);
 
     const interval = setInterval(() => {
       silentRefresh();
     }, 14 * 60 * 1000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, []);
 
   const login = async (email, password) => {

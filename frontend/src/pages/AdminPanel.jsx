@@ -16,7 +16,9 @@ import {
   Search,
   CheckCircle,
   XCircle,
-  Database
+  Database,
+  CreditCard,
+  CheckCircle2
 } from 'lucide-react';
 
 const AdminPanel = () => {
@@ -31,6 +33,7 @@ const AdminPanel = () => {
   const [campaigns, setCampaigns] = useState([]);
   const [users, setUsers] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [message, setMessage] = useState(null);
 
   const showNotification = (type, text) => {
@@ -45,15 +48,17 @@ const AdminPanel = () => {
     try {
       const headers = { Authorization: `Bearer ${user.token}` };
       
-      const [campaignsRes, usersRes, auditRes] = await Promise.all([
+      const [campaignsRes, usersRes, auditRes, paymentsRes] = await Promise.all([
         axios.get('/api/campaigns', { headers }),
         axios.get('/api/auth/users', { headers }),
-        axios.get('/api/ai/actions', { headers })
+        axios.get('/api/ai/actions', { headers }),
+        axios.get('/api/campaigns/payments', { headers })
       ]);
 
       setCampaigns(campaignsRes.data);
       setUsers(usersRes.data);
       setAuditLogs(auditRes.data);
+      setPayments(paymentsRes.data);
     } catch (err) {
       console.error('Failed to retrieve administrative data:', err);
       setError(true);
@@ -161,6 +166,13 @@ const AdminPanel = () => {
     (log.result && log.result.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  const filteredPayments = payments.filter(p => 
+    (p.title && p.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (p.paymentId && p.paymentId.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (p.merchantId?.name && p.merchantId.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (p.merchantId?.email && p.merchantId.email.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -207,6 +219,16 @@ const AdminPanel = () => {
             }`}
           >
             <Users size={14} /> Users ({users.length})
+          </button>
+          <button 
+            onClick={() => { setActiveTab('payments'); setSearchQuery(''); }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'payments' 
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30' 
+                : 'text-gray-400 hover:text-white hover:bg-white/[0.04]'
+            }`}
+          >
+            <CreditCard size={14} /> Payment History ({payments.length})
           </button>
           <button 
             onClick={() => { setActiveTab('audit'); setSearchQuery(''); }}
@@ -364,6 +386,58 @@ const AdminPanel = () => {
                           >
                             <Trash2 size={13} /> {u._id === user._id ? 'You' : 'Delete'}
                           </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Payment History Tab Table */}
+          {activeTab === 'payments' && (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left text-xs">
+                <thead>
+                  <tr className="border-b border-white/[0.06] bg-white/[0.01] text-gray-400 font-bold uppercase tracking-wider">
+                    <th className="p-4">Date & Time</th>
+                    <th className="p-4">Campaign</th>
+                    <th className="p-4">Payer / Merchant</th>
+                    <th className="p-4">Razorpay Payment ID</th>
+                    <th className="p-4">Amount Paid</th>
+                    <th className="p-4 text-right">Payment Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.04] text-gray-300">
+                  {filteredPayments.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="p-8 text-center text-gray-500">No paid campaign transactions found.</td>
+                    </tr>
+                  ) : (
+                    filteredPayments.map((p) => (
+                      <tr key={p._id} className="hover:bg-white/[0.01] transition-colors">
+                        <td className="p-4 text-gray-400 font-mono">
+                          {p.paidAt ? new Date(p.paidAt).toLocaleString() : new Date(p.updatedAt).toLocaleString()}
+                        </td>
+                        <td className="p-4">
+                          <div className="font-bold text-white max-w-xs truncate">{p.title}</div>
+                          <span className="text-[9px] text-yellow-400 font-semibold">{p.discount} ({p.type})</span>
+                        </td>
+                        <td className="p-4">
+                          <div className="font-semibold text-gray-200">{p.merchantId?.name || 'Admin Merchant'}</div>
+                          <div className="text-[10px] text-gray-500 font-mono">{p.merchantId?.email || 'admin@example.com'}</div>
+                        </td>
+                        <td className="p-4 font-mono font-bold text-purple-400">
+                          {p.paymentId || 'TXN_RAZORPAY'}
+                        </td>
+                        <td className="p-4 font-bold text-green-400">
+                          ₹{(p.paidAmount || 10.00).toFixed(2)}
+                        </td>
+                        <td className="p-4 text-right">
+                          <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[9px] font-bold rounded-lg uppercase tracking-wider inline-flex items-center gap-1">
+                            <CheckCircle2 size={10} /> {p.paymentStatus || 'PAID'}
+                          </span>
                         </td>
                       </tr>
                     ))

@@ -24,9 +24,12 @@ const Navbar = () => {
 
   useEffect(() => {
     if (user?.token) {
-      fetchNotifications();
+      const initialTimer = setTimeout(() => fetchNotifications(), 0);
       const interval = setInterval(fetchNotifications, 30000); // 30s polling
-      return () => clearInterval(interval);
+      return () => {
+        clearTimeout(initialTimer);
+        clearInterval(interval);
+      };
     }
   }, [user]);
 

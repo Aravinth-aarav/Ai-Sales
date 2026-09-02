@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
-import { Megaphone, Calendar, Copy, Check, Info, Sparkles, UserCheck, BarChart3, Smartphone, CreditCard, Landmark, QrCode, ChevronLeft, ChevronRight, X, TrendingUp } from 'lucide-react';
+import { Megaphone, Calendar, Copy, Check, Info, Sparkles, UserCheck, BarChart3, Smartphone, CreditCard, Landmark, QrCode, ChevronLeft, ChevronRight, X, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const Campaigns = () => {
@@ -120,9 +120,16 @@ const Campaigns = () => {
               <div className="space-y-4">
                 {/* Status and Dates */}
                 <div className="flex justify-between items-center">
-                  <span className="px-2.5 py-0.5 bg-green-500/15 text-green-400 text-[10px] font-bold rounded border border-green-500/20 uppercase tracking-wider">
-                    {campaign.status}
-                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="px-2.5 py-0.5 bg-green-500/15 text-green-400 text-[10px] font-bold rounded border border-green-500/20 uppercase tracking-wider">
+                      {campaign.status}
+                    </span>
+                    {campaign.isPaid && (
+                      <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded border border-emerald-500/40 flex items-center gap-1">
+                        <CheckCircle2 size={10} className="text-emerald-400" /> Paid (₹{(campaign.paidAmount || 10).toFixed(2)})
+                      </span>
+                    )}
+                  </div>
                   <span className="text-gray-500 text-xs flex items-center gap-1">
                     <Calendar size={12} /> {new Date(campaign.createdAt).toLocaleDateString()}
                   </span>
